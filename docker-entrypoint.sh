@@ -9,12 +9,20 @@ if [ "${DEBUG_MODE}" == "true" ]; then
     set -o xtrace
 fi
 
+JAVA_EXTRA_PARAMS=""
+
 CONFIG_FILE="/etc/unimus-core/unimus-core.properties"
+SCRIPT_FILE="/opt/unimus-core/start-unimus-core.sh"
+JAR_FILE="/opt/unimus-core/unimus-core.jar"
 
 # default value of unimus server port
 [ -z "$UNIMUS_SERVER_ADDRESS" ] && { UNIMUS_SERVER_ADDRESS=127.0.0.1; }
 [ -z "$UNIMUS_SERVER_PORT" ] && { UNIMUS_SERVER_PORT=5509; }
 [ -z "$UNIMUS_SERVER_ACCESS_KEY" ] && { UNIMUS_SERVER_ACCESS_KEY="NOT_A_VALID_ACCESS_KEY"; }
+
+[ ! -z "$XMS" ] &&  { JAVA_EXTRA_PARAMS="$JAVA_EXTRA_PARAMS -Xms$XMS"; }
+[ ! -z "$XMX" ] && { JAVA_EXTRA_PARAMS="$JAVA_EXTRA_PARAMS -Xmx$XMX"; }
+[ ! -z "$JAVA_OPTS" ] && { JAVA_EXTRA_PARAMS="$JAVA_OPTS"; }
 
 [ -z "$TZ" ] && { TZ="UTC"; }
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -32,5 +40,12 @@ ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 sed '/unimus.access.key/d' $CONFIG_FILE
 #[ ! -z $UNIMUS_SERVER_ACCESS_KEY ] && { echo "Updating access key in config..."; sed -i s@unimus.access.key=.*@unimus.access.key=$UNIMUS_SERVER_ACCESS_KEY@g $CONFIG_FILE; }
 echo "unimus.access.key=$UNIMUS_SERVER_ACCESS_KEY" >> $CONFIG_FILE
+
+echo "#!/bin/bash" >> $SCRIPT_FILE
+echo "/usr/bin/java $JAVA_EXTRA_PARAMS -jar $JAR_FILE" >> $SCRIPT_FILE
+
+chmod 764 $SCRIPT_FILE
+
+ls -al /opt/unimus-core
 
 exec "$@"
