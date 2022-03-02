@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-ARG VERSION=2.2.0
+ARG VERSION=2.2.1
 
 LABEL org.opencontainers.image.title="Unimus Core (alpine)" \
       org.opencontainers.image.authors="Andrew James" \
